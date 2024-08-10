@@ -1,0 +1,11 @@
+Основы программирования;Cтандарт:417 EUR;Plus:499 EUR;Premium:975 EUR
+FullStack Developer;Cтандарт:417 EUR;Plus:499 EUR;Premium:975 EUR
+Java Developer;Cтандарт:417 EUR;Plus:499 EUR;Premium:975 EUR
+Front-End Developer;Cтандарт:417 EUR;Plus:499 EUR;Premium:975 EUR
+Python Developer;Cтандарт:417 EUR;Plus:499 EUR;Premium:975 EUR
+Автоматизация тестирования;Cтандарт:417 EUR;Plus:499 EUR;Premium:975 EUR
+Web & UI/UX Design;Cтандарт:417 EUR;Plus:499 EUR;Premium:975 EUR
+QA тестирование ПО;Cтандарт:417 EUR;Plus:499 EUR;Premium:975 EUR
+DevOps Engineer;Cтандарт:417 EUR;Plus:499 EUR;Premium:975 EUR
+C# / .NET Developer;Cтандарт:417 EUR;Plus:499 EUR;Premium:975 EUR
+Алгоритмы и структуры;Cтандарт:417 EUR;Plus:499 EUR;Premium:975 EUR

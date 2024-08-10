@@ -1,0 +1,11 @@
+Основы программирования;https://prog.academy/osnovi
+FullStack Developer;https://prog.academy/fullstack
+Java Developer;https://prog.academy/java
+Front-End Developer;https://prog.academy/frontend
+Python Developer;https://prog.academy/python
+Автоматизация тестирования;https://prog.academy/qa-auto
+Web & UI/UX Design;https://prog.academy/web-design
+QA тестирование ПО;https://prog.academy/qa
+DevOps Engineer;https://prog.academy/devops
+C# / .NET Developer;https://prog.academy/csharp
+Алгоритмы и структуры;https://prog.academy/algo
