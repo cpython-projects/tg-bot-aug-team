@@ -10,6 +10,31 @@ bot = telebot.TeleBot(TOKEN)
 app = Flask(__name__)
 
 
+def get_list_of_courses(filename):
+    res = {}
+    with open(filename, 'r', encoding='utf-8') as f:
+        for line in f:
+            course_name, course_link = line.strip().split(';')
+            course_name = course_name.strip()
+            course_link = course_link.strip()
+            res[course_name] = course_link
+    return res
+
+
+@bot.message_handler(commands=['courses'])
+def all_courses(message):
+    filename = os.path.join('data', 'courses.txt')
+    courses = get_list_of_courses(filename)
+    if not courses:
+        bot.send_message(message.chat.id, 'Курсы не найдены')
+        return
+    keyboard = telebot.types.InlineKeyboardMarkup(row_width=1)
+    for course_name, course_link in courses.items():
+        url_button = telebot.types.InlineKeyboardButton(text=course_name, url=course_link)
+        keyboard.add(url_button)
+    bot.send_message(message.chat.id, text='Выберите курс', reply_markup=keyboard)
+
+
 @bot.message_handler(commands=['start'])
 def send_welcome(message):
     pass
