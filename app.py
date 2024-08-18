@@ -35,6 +35,44 @@ def all_courses(message):
     bot.send_message(message.chat.id, text='Выберите курс', reply_markup=keyboard)
 
 
+def find_courses_by_keyword(filename, keyword):
+    keyword = keyword.lower()
+    filtered_courses = {}
+
+    with open(filename, 'r', encoding='utf-8') as f:
+        for line in f:
+            course_name, course_link = line.strip().split(';')
+            course_name = course_name.strip()
+            course_link = course_link.strip()
+
+            if keyword in course_name.lower():
+                filtered_courses[course_name] = course_link
+
+    return filtered_courses
+
+@bot.message_handler(commands=['findcourse'])
+def find_course(message):
+    try:
+        keyword = message.text.split(maxsplit=1)[1].strip()
+    except IndexError:
+        bot.send_message(message.chat.id, 'Пожалуйста, введите ключевое слово после команды /findcourse')
+        return
+
+    filename = os.path.join('data', 'courses.txt')
+    courses = find_courses_by_keyword(filename, keyword)
+
+    if not courses:
+        bot.send_message(message.chat.id, f'Курсы с ключевым словом "{keyword}" не найдены.')
+        return
+
+    keyboard = telebot.types.InlineKeyboardMarkup(row_width=1)
+    for course_name, course_link in courses.items():
+        url_button = telebot.types.InlineKeyboardButton(text=course_name, url=course_link)
+        keyboard.add(url_button)
+
+    bot.send_message(message.chat.id, text='Найденные курсы:', reply_markup=keyboard)
+
+
 @bot.message_handler(commands=['start'])
 def send_welcome(message):
     pass
