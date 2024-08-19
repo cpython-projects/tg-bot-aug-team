@@ -3,10 +3,14 @@ from dotenv import load_dotenv
 import os
 from flask import Flask, request
 
+from database_manager.database_manager import DatabaseManager
+
 load_dotenv()
 
 TOKEN = os.getenv('TELEGRAM_BOT_TOKEN')
 bot = telebot.TeleBot(TOKEN)
+# init Database Manager
+db_manager = DatabaseManager()
 app = Flask(__name__)
 
 
@@ -50,6 +54,7 @@ def find_courses_by_keyword(filename, keyword):
 
     return filtered_courses
 
+
 @bot.message_handler(commands=['findcourse'])
 def find_course(message):
     try:
@@ -71,6 +76,33 @@ def find_course(message):
         keyboard.add(url_button)
 
     bot.send_message(message.chat.id, text='Найденные курсы:', reply_markup=keyboard)
+
+
+@bot.message_handler(commands=['registration'])
+def registration_user_on_course(message):
+    filename = os.path.join('data', 'courses.txt')
+    courses = get_list_of_courses(filename)
+    if not courses:
+        bot.send_message(message.chat.id, 'Курсы не найдены')
+        return
+    keyboard = telebot.types.InlineKeyboardMarkup(row_width=1)
+    for course_name, _ in courses.items():
+        button = telebot.types.InlineKeyboardButton(text=course_name, callback_data=course_name)
+        keyboard.add(button)
+    bot.send_message(message.chat.id, text='Выберите курс', reply_markup=keyboard)
+
+
+@bot.callback_query_handler(func=lambda call: True)
+def handle_course_selection(call):
+    # get user info from call
+    course_name = call.data
+    user_id = call.from_user.id
+    username = call.from_user.username
+
+    # save user data to db
+    db_manager.save_user_registration(user_id, username, course_name)
+
+    bot.send_message(call.message.chat.id, f'Вы успешно записались на курс: {course_name}')
 
 
 @bot.message_handler(commands=['start'])
