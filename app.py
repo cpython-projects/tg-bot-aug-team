@@ -13,7 +13,6 @@ bot = telebot.TeleBot(TOKEN)
 db_manager = DatabaseManager()
 app = Flask(__name__)
 
-
 def get_list_of_courses(filename):
     res = {}
     with open(filename, 'r', encoding='utf-8') as f:
@@ -23,21 +22,6 @@ def get_list_of_courses(filename):
             course_link = course_link.strip()
             res[course_name] = course_link
     return res
-
-
-@bot.message_handler(commands=['courses'])
-def all_courses(message):
-    filename = os.path.join('data', 'courses.txt')
-    courses = get_list_of_courses(filename)
-    if not courses:
-        bot.send_message(message.chat.id, 'Курсы не найдены')
-        return
-    keyboard = telebot.types.InlineKeyboardMarkup(row_width=1)
-    for course_name, course_link in courses.items():
-        url_button = telebot.types.InlineKeyboardButton(text=course_name, url=course_link)
-        keyboard.add(url_button)
-    bot.send_message(message.chat.id, text='Выберите курс', reply_markup=keyboard)
-
 
 def find_courses_by_keyword(filename, keyword):
     keyword = keyword.lower()
@@ -54,6 +38,31 @@ def find_courses_by_keyword(filename, keyword):
 
     return filtered_courses
 
+def get_course_prices(filename, course_name):
+    prices = {}
+    with open(filename, 'r', encoding='utf-8') as f:
+        for line in f:
+            parts = line.strip().split(';')
+            name = parts[0].strip()
+            if name.lower() == course_name.lower():
+                for price_part in parts[1:]:
+                    level, price = price_part.split(':')
+                    prices[level.strip()] = price.strip()
+                return prices
+    return None
+
+@bot.message_handler(commands=['courses'])
+def all_courses(message):
+    filename = os.path.join('data', 'courses.txt')
+    courses = get_list_of_courses(filename)
+    if not courses:
+        bot.send_message(message.chat.id, 'Курсы не найдены')
+        return
+    keyboard = telebot.types.InlineKeyboardMarkup(row_width=1)
+    for course_name, course_link in courses.items():
+        url_button = telebot.types.InlineKeyboardButton(text=course_name, url=course_link)
+        keyboard.add(url_button)
+    bot.send_message(message.chat.id, text='Выберите курс', reply_markup=keyboard)
 
 @bot.message_handler(commands=['findcourse'])
 def find_course(message):
@@ -77,7 +86,6 @@ def find_course(message):
 
     bot.send_message(message.chat.id, text='Найденные курсы:', reply_markup=keyboard)
 
-
 @bot.message_handler(commands=['registration'])
 def registration_user_on_course(message):
     filename = os.path.join('data', 'courses.txt')
@@ -91,7 +99,6 @@ def registration_user_on_course(message):
         keyboard.add(button)
     bot.send_message(message.chat.id, text='Выберите курс', reply_markup=keyboard)
 
-
 @bot.callback_query_handler(func=lambda call: True)
 def handle_course_selection(call):
     # get user info from call
@@ -104,16 +111,32 @@ def handle_course_selection(call):
 
     bot.send_message(call.message.chat.id, f'Вы успешно записались на курс: {course_name}')
 
+@bot.message_handler(commands=['courseprice'])
+def course_price(message):
+    try:
+        course_name = message.text.split(maxsplit=1)[1].strip()
+    except IndexError:
+        bot.send_message(message.chat.id, 'Пожалуйста, введите название курса после команды /courseprice')
+        return
+
+    filename = os.path.join('data', 'price-list.txt')
+    prices = get_course_prices(filename, course_name)
+
+    if prices is None:
+        bot.send_message(message.chat.id, f'Стоимость курса "{course_name}" не найдена.')
+    else:
+        price_message = f'Цены для курса "{course_name}":\n'
+        for level, price in prices.items():
+            price_message += f'{level}: {price}\n'
+        bot.send_message(message.chat.id, price_message)
 
 @bot.message_handler(commands=['start'])
 def send_welcome(message):
     pass
 
-
 @bot.message_handler(commands=['help'])
 def send_help(message):
     pass
-
 
 @app.route('/' + TOKEN, methods=['POST'])
 def get_message():
@@ -122,13 +145,11 @@ def get_message():
     bot.process_new_updates([update])
     return 'Test Bot', 200
 
-
 @app.route('/')
 def webhook():
     bot.remove_webhook()
     bot.set_webhook(url='https://july-bot-606ff6a196f8.herokuapp.com/' + TOKEN)
     return 'Test Bot', 200
-
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 5000)))
