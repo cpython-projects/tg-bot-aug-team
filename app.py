@@ -95,14 +95,16 @@ def registration_user_on_course(message):
         return
     keyboard = telebot.types.InlineKeyboardMarkup(row_width=1)
     for course_name, _ in courses.items():
-        button = telebot.types.InlineKeyboardButton(text=course_name, callback_data=course_name)
+        button = telebot.types.InlineKeyboardButton(text=course_name,
+                                                    callback_data=f'register_{course_name}')
         keyboard.add(button)
     bot.send_message(message.chat.id, text='Выберите курс', reply_markup=keyboard)
 
-@bot.callback_query_handler(func=lambda call: True)
+
+@bot.callback_query_handler(func=lambda call: call.data.startswith('register_'))
 def handle_course_selection(call):
     # get user info from call
-    course_name = call.data
+    course_name = call.data.split('register_')[1]
     user_id = call.from_user.id
     username = call.from_user.username
 
