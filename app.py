@@ -13,6 +13,28 @@ bot = telebot.TeleBot(TOKEN)
 db_manager = DatabaseManager()
 app = Flask(__name__)
 
+@bot.message_handler(commands=['available_courses'])
+def send_available_courses(message):
+    filename = os.path.join('data', 'schedule.txt')
+    courses = load_courses(filename)
+    available_courses = {course: date for course, date in courses.items() if date != '-' and date != 'x'}
+
+    if available_courses:
+        response_text = '\n'.join([f"{course}: {date}" for course, date in available_courses.items()])
+    else:
+        response_text = "Нет доступных курсов."
+
+    bot.send_message(message.chat.id, response_text)
+
+
+def load_courses(filename):
+    courses = {}
+    with open(filename, 'r', encoding='utf-8') as file:
+        for line in file:
+            name, dates = line.strip().split(';')
+            courses[name] = dates
+    return courses
+
 def get_list_of_courses(filename):
     res = {}
     with open(filename, 'r', encoding='utf-8') as f:
