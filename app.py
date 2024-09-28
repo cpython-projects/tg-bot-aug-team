@@ -156,11 +156,32 @@ def course_price(message):
 
 @bot.message_handler(commands=['start'])
 def send_welcome(message):
-    pass
+    '''
+    Greeting reply. Trigger is a user's "/start" command message. Informational purpose only.
+    '''
+    welcome_answer = '''
+👋 Вас приветствует бот Prog Academy!
+Если желаете получить информацию о всех возможностях данного бота, нажмите *Help*
+
+Пожалуйста, выберите интересующий вас пункт меню и мы приступим. 😊
+''' 
+    bot.send_message(message.chat.id, welcome_answer, parse_mode='Markdown')
 
 @bot.message_handler(commands=['help'])
 def send_help(message):
-    pass
+    '''
+    A reply with a description of all the bot's functions. Trigger is a user's "/help" command message. Informational purpose only.
+    '''
+    help_answer = '''
+Вот что вы можете сделать:
+1️⃣ Просмотреть доступные курсы и получить всю информацию о них (Описание, продолжительность, дата старта, стоимость)
+2️⃣ Записаться на курс, если запись открыта
+3️⃣ Прочитать отзывы и оставить свои
+4️⃣ Если останутся вопросы, связаться со службой поддержки и проконсультироваться
+
+Пожалуйста, выберите интересующий вас пункт меню и мы приступим. 😊 
+'''
+    bot.send_message(message.chat.id, help_answer, parse_mode='Markdown')
 
 @app.route('/' + TOKEN, methods=['POST'])
 def get_message():
