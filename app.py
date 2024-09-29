@@ -180,7 +180,7 @@ def course_price(message):
 @bot.message_handler(commands=['start'])
 def send_welcome(message):
     '''
-    Greeting reply. Trigger is a user's "/start" command message. Informational purpose only.
+    1. Greeting reply and keyboard displaying. Trigger is a user's "/start" command message.
     '''
     welcome_answer = '''
 👋 Вас приветствует бот Prog Academy!
@@ -188,7 +188,7 @@ def send_welcome(message):
 
 Пожалуйста, выберите интересующий вас пункт меню и мы приступим. 😊
 ''' 
-    bot.send_message(message.chat.id, welcome_answer, parse_mode='Markdown')
+    bot.send_message(message.chat.id, welcome_answer, parse_mode='Markdown', reply_markup=main_user_keyboard())
 
 @bot.message_handler(func=lambda message: message.text == '/help' or message.text == 'Help')
 def send_help(message):
