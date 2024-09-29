@@ -39,8 +39,14 @@ def main_user_keyboard():
 @bot.message_handler(commands=['available_courses'])
 def send_available_courses(message):
     filename = os.path.join('data', 'schedule.txt')
-    courses = load_courses(filename)
-    available_courses = {course: date for course, date in courses.items() if date != '-' and date != 'x'}
+
+    if not os.path.exists(filename):
+        bot.send_message(message.chat.id, "Файл с курсами не найден.")
+        return
+
+    courses = load_dates(filename)
+    available_courses = {course: date for course, date in courses.items() if
+                         date.strip() != '-' and date.strip() != 'x'}
 
     if available_courses:
         response_text = '\n'.join([f"{course}: {date}" for course, date in available_courses.items()])
@@ -48,6 +54,15 @@ def send_available_courses(message):
         response_text = "Нет доступных курсов."
 
     bot.send_message(message.chat.id, response_text)
+
+
+def load_dates(filename):
+    courses = {}
+    with open(filename, 'r', encoding='utf-8') as f:
+        for line in f:
+            course, date = line.strip().split(';', 1)
+            courses[course] = date
+    return courses
 
 
 def load_courses(filename):
