@@ -13,6 +13,29 @@ bot = telebot.TeleBot(TOKEN)
 db_manager = DatabaseManager()
 app = Flask(__name__)
 
+
+def main_user_keyboard():
+    '''
+    Function creates a keybord to ease the user's interaction. 
+    Keyboard displaying is triggered with the "/start" command. 
+    The keyboard remains displayed untill reply_markup is redefined in any other function.
+    You can add new buttons right bellow if needed.
+    Use func=lambda message: message.text == 'YOUR_BUTTON_TEXT_HERE' in your @bot.message_handler to trigger bot replies. 
+    '''
+    keyboard = telebot.types.ReplyKeyboardMarkup(resize_keyboard=True)
+
+    button_courses_list = telebot.types.KeyboardButton('Список курсов')
+    buttor_course_program = telebot.types.KeyboardButton('Программа курса')
+    button_course_cost = telebot.types.KeyboardButton('Стоимость курса')
+    button_course_apply = telebot.types.KeyboardButton('Записаться на курс')
+    button_review = telebot.types.KeyboardButton('Оставить отзыв')
+    button_help = telebot.types.KeyboardButton('Help')
+
+    keyboard.add(button_courses_list, buttor_course_program, button_course_cost, button_course_apply, button_review, button_help)
+
+    return keyboard
+
+
 @bot.message_handler(commands=['available_courses'])
 def send_available_courses(message):
     filename = os.path.join('data', 'schedule.txt')
@@ -167,7 +190,7 @@ def send_welcome(message):
 ''' 
     bot.send_message(message.chat.id, welcome_answer, parse_mode='Markdown')
 
-@bot.message_handler(commands=['help'])
+@bot.message_handler(func=lambda message: message.text == '/help' or message.text == 'Help')
 def send_help(message):
     '''
     A reply with a description of all the bot's functions. Trigger is a user's "/help" command message. Informational purpose only.
