@@ -122,7 +122,7 @@ def all_courses(message):
     for course_name, course_link in courses.items():
         url_button = telebot.types.InlineKeyboardButton(text=course_name, url=course_link)
         keyboard.add(url_button)
-    bot.send_message(message.chat.id, text='Выберите курс', reply_markup=keyboard)
+    bot.send_message(message.chat.id, text='Выберите интересующий вас курс, чтоб узнать его программу', reply_markup=keyboard)
 
 @bot.message_handler(commands=['findcourse'])
 def find_course(message):
@@ -146,8 +146,11 @@ def find_course(message):
 
     bot.send_message(message.chat.id, text='Найденные курсы:', reply_markup=keyboard)
 
-@bot.message_handler(commands=['registration'])
+@bot.message_handler(func=lambda message: message.text == 'Записаться на курс')
 def registration_user_on_course(message):
+    '''
+    Responds with a list of courses and asks the user to select a course for registration.
+    '''
     filename = os.path.join('data', 'courses.txt')
     courses = get_list_of_courses(filename)
     if not courses:
@@ -155,42 +158,61 @@ def registration_user_on_course(message):
         return
     keyboard = telebot.types.InlineKeyboardMarkup(row_width=1)
     for course_name, _ in courses.items():
-        button = telebot.types.InlineKeyboardButton(text=course_name,
-                                                    callback_data=f'register_{course_name}')
+        button = telebot.types.InlineKeyboardButton(text=course_name, callback_data=f'register_{course_name}')
         keyboard.add(button)
-    bot.send_message(message.chat.id, text='Выберите курс', reply_markup=keyboard)
+    bot.send_message(message.chat.id, 'Запись на какой курс вас интересует?', reply_markup=keyboard)
 
 
 @bot.callback_query_handler(func=lambda call: call.data.startswith('register_'))
 def handle_course_selection(call):
-    # get user info from call
+    '''
+    Registers the user for the selected course and sends a confirmation message.
+    '''
     course_name = call.data.split('register_')[1]
     user_id = call.from_user.id
     username = call.from_user.username
 
-    # save user data to db
     db_manager.save_user_registration(user_id, username, course_name)
 
-    bot.send_message(call.message.chat.id, f'Вы успешно записались на курс: {course_name}')
+    bot.send_message(call.message.chat.id, f'Вы успешно записались на курс: {course_name}!\nС вами свяжутся в телеграмм в ближайшее время.')
 
-@bot.message_handler(commands=['courseprice'])
-def course_price(message):
-    try:
-        course_name = message.text.split(maxsplit=1)[1].strip()
-    except IndexError:
-        bot.send_message(message.chat.id, 'Пожалуйста, введите название курса после команды /courseprice')
+@bot.message_handler(func=lambda message: message.text == 'Стоимость курса')
+def ask_for_course_price(message):
+    '''
+    Responds with a list of courses and asks the user to select a course to get its price.
+    '''
+    filename = os.path.join('data', 'courses.txt')
+    courses = get_list_of_courses(filename) 
+
+    if not courses:
+        bot.send_message(message.chat.id, 'Курсы не найдены')
         return
 
-    filename = os.path.join('data', 'price-list.txt')
-    prices = get_course_prices(filename, course_name)
+    keyboard = telebot.types.InlineKeyboardMarkup(row_width=1)
+    for course_name, _ in courses.items():
+        button = telebot.types.InlineKeyboardButton(text=course_name, callback_data=f'price_{course_name}')
+        keyboard.add(button)
 
-    if prices is None:
-        bot.send_message(message.chat.id, f'Стоимость курса "{course_name}" не найдена.')
+    bot.send_message(message.chat.id, 'Стоимость какого курса вас интересует?', reply_markup=keyboard)
+
+
+@bot.callback_query_handler(func=lambda call: call.data.startswith('price_'))
+def send_course_price(call):
+    '''
+    Sends the price of the selected course after the user clicks on the course button.
+    '''
+    course_name = call.data.split('price_')[1]
+    filename = os.path.join('data', 'price-list.txt')
+    price = get_course_prices(filename, course_name)
+
+    if price is None:
+        bot.send_message(call.message.chat.id, f'Стоимость курса "{course_name}" не найдена.')
     else:
         price_message = f'Цены для курса "{course_name}":\n'
-        for level, price in prices.items():
+        for level, price in price.items():
             price_message += f'{level}: {price}\n'
-        bot.send_message(message.chat.id, price_message)
+        bot.send_message(call.message.chat.id, price_message)
+
 
 @bot.message_handler(commands=['start'])
 def send_welcome(message):
@@ -204,6 +226,7 @@ def send_welcome(message):
 Пожалуйста, выберите интересующий вас пункт меню и мы приступим. 😊
 ''' 
     bot.send_message(message.chat.id, welcome_answer, parse_mode='Markdown', reply_markup=main_user_keyboard())
+
 
 @bot.message_handler(func=lambda message: message.text == '/help' or message.text == 'Help')
 def send_help(message):
@@ -220,6 +243,20 @@ def send_help(message):
 Пожалуйста, выберите интересующий вас пункт меню и мы приступим. 😊 
 '''
     bot.send_message(message.chat.id, help_answer, parse_mode='Markdown')
+
+
+@bot.message_handler(func=lambda message: message.text == 'Оставить отзыв')
+def leave_review(message):
+    '''
+    Sends a link to the DOU page for leaving a review when the user presses the "Оставить отзыв" button.
+    '''
+    review_message = '''
+Вы уже прошли курс у нас? Если да, то будем рады вашему отзыву на нашей страничке на сайте DOU!
+[https://jobs.dou.ua/companies/progkievua/reviews/](https://jobs.dou.ua/companies/progkievua/reviews/)
+'''
+    bot.send_message(message.chat.id, review_message, parse_mode='Markdown')
+
+
 
 @app.route('/' + TOKEN, methods=['POST'])
 def get_message():
