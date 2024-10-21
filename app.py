@@ -98,13 +98,14 @@ def find_courses_by_keyword(filename, keyword):
 
     return filtered_courses
 
+
 def get_course_prices(filename, course_name):
     prices = {}
     with open(filename, 'r', encoding='utf-8') as f:
         for line in f:
             parts = line.strip().split(';')
             name = parts[0].strip()
-            if name.lower() == course_name.lower():
+            if course_name.lower() in name.lower():
                 for price_part in parts[1:]:
                     level, price = price_part.split(':')
                     prices[level.strip()] = price.strip()
