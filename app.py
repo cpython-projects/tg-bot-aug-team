@@ -112,7 +112,7 @@ def get_course_prices(filename, course_name):
                 return prices
     return None
 
-@bot.message_handler(commands=['courses'])
+@bot.message_handler(func=lambda message: message.text == 'Программа курса')
 def all_courses(message):
     filename = os.path.join('data', 'courses.txt')
     courses = get_list_of_courses(filename)
